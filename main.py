@@ -1,3 +1,6 @@
+import pandas as pd
+import sqlite3
+
 def menu():
     menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.']
     print("Select one option:")

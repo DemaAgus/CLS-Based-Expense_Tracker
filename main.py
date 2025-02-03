@@ -81,6 +81,15 @@ def add(conn):
         return False    
 
 def edit(conn):
+    '''
+    Edit expenses in the database.
+    
+    Parameters:
+    conn (sqlite3.Connection): Active database connection object
+    
+    Returns:
+    bool: True if operation completed successfully, False if errors occurred
+    '''
     flag = True
     cursor = conn.cursor()
     while flag:
@@ -117,6 +126,15 @@ def edit(conn):
     return True
     
 def delete(conn):
+    '''
+    Delete expenses from the database.
+    
+    Parameters:
+    conn (sqlite3.Connection): Active database connection object
+    
+    Returns:
+    bool: True if operation completed successfully, False if errors occurred
+    '''
     flag = True
     cursor = conn.cursor()
     while flag:
@@ -267,6 +285,12 @@ def export(conn):
         return False
 
 def menu(database):
+    """
+    Displays a menu for the user to interact with the expense tracking system.
+    
+    Parameters:
+    database (sqlite3.Connection): Active database connection object
+    """
     menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.','Exit.']
     print("Select one option:")
     for i in range(len(menu)):

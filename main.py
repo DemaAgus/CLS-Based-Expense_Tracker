@@ -31,11 +31,11 @@ def edit(conn):
             df_view = pd.read.sql_query("SELECT * FROM expenses WHERE date = ?", conn,params=(date,))
         except Exception as e:
             print("Error:", e)
-            continue
+            return False
         
         if df_view.empty:
             print("No expenses found for this date.")
-            continue
+            return False
         
         print("\nSelect the expense you want to edit:")
         print(df_view)
@@ -46,7 +46,7 @@ def edit(conn):
             new_date = input("New date (YYYY-MM-DD): ").strip().lower()
         except (ValueError,TypeError) as e:
             print(f'invalid input: {e}')
-            continue
+            return False
         
         try:
             cursor.excetute('''UPDATE expenses SET cost = ?, date = ?, kind = ? WHERE id = ''',(new_cost, new_date, new_kind, id_edit))
@@ -55,6 +55,7 @@ def edit(conn):
             print(f"Database error: {e}")
             conn.rollback()
         flag = input("Do you want to edit another cost? (y/n):") == 'y'
+    return True
     
 def delete(conn):
     flag = True

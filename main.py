@@ -1,25 +1,84 @@
 import pandas as pd
 import sqlite3
+from datetime import datetime
 
 def add(conn):
-    data = {
-        'cost': [],
-        'date': [],
-        'kind': []
-    }
+    """
+    Adds new expenses to the SQLite database through user input.
+    
+    Parameters:
+    conn (sqlite3.Connection): Active database connection object
+    
+    Returns:
+    bool: True if operation completed successfully, False if errors occurred
+    
+    Features:
+    - Input validation for numeric cost
+    - Basic date format validation (YYYY-MM-DD)
+    - Transaction safety with rollback on error
+    - SQL injection prevention through parameterization
+    """
+    data = {'cost': [],'date': [],'kind': []}
+    
     flag = True
     while flag:
-        print("Add a new expense:\n")
-        cost = input("Cost:")
-        date = input("Date:")
-        kind = input("Kind:")
-        data['cost'].append(cost)
+        print("\n--- Add New Expense ---")
+        
+        # Cost validation
+        while True:
+            cost = input("Cost (numeric value): ").strip()
+            try:
+                cost_val = float(cost)
+                if cost_val <= 0:
+                    raise ValueError("Cost must be positive")
+                break
+            except ValueError:
+                print("Invalid input. Please enter a positive numeric value.")
+        
+        # Date validation
+        while True:
+            date = input("Date (YYYY-MM-DD): ").strip()
+            try:
+                datetime.strptime(date, '%Y-%m-%d')
+                break
+            except ValueError:
+                print("Invalid date format. Please use YYYY-MM-DD format.")
+        
+        # Category input
+        kind = input("Expense category: ").strip()
+        
+        # Store validated values
+        data['cost'].append(cost_val)
         data['date'].append(date)
         data['kind'].append(kind)
-        flag = input("Do you want to add another cost? (y/n):") == 'y'
-    df_data = pd.DataFrame(data)
-    df_data.to_sql(name='expenses', con=conn, if_exists='append', index=False)
-    return True    
+        
+        # Continue prompt
+        while True:
+            cont = input("\nAdd another expense? (y/n): ").strip().lower()
+            if cont in ('y', 'n'):
+                flag = (cont == 'y')
+                break
+            print("Invalid input. Please enter 'y' or 'n'.")
+    
+    try:
+        # Create DataFrame from validated data
+        df_data = pd.DataFrame(data)
+        
+        # Insert into database with explicit transaction
+        with conn:
+            df_data.to_sql(
+                name='expenses',
+                con=conn,
+                if_exists='append',
+                index=False
+            )
+        print("\nSuccessfully added expenses to database.")
+        return True
+        
+    except Exception as e:
+        print(f"\nError saving to database: {str(e)}")
+        conn.rollback()
+        return False    
 
 def edit(conn):
     flag = True
@@ -102,10 +161,17 @@ def menu(database):
         case '1':
             if add(database) == True:
                 print("Expenses added successfully.")
+                menu(database)
             else:
                 print("Error: adding expenses.")
+                menu(database)
         case '2':
-            edit(database)
+            if edit(database) == True:
+                print("Expenses edited successfully.")
+                menu(database)
+            else:
+                print("Error: editing expenses.")
+                menu(database)
         case '3':
             if delete(database) == True:
                 print("Expenses deleted successfully.")

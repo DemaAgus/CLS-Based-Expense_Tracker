@@ -267,7 +267,7 @@ def export(conn):
         return False
 
 def menu(database):
-    menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.']
+    menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.','Exit.']
     print("Select one option:")
     for i in range(len(menu)):
         print(f'{i+1}. {menu[i]}')
@@ -308,6 +308,10 @@ def menu(database):
             else:
                 print("\nError: exporting data.")
                 menu(database)
+        case '6':
+            print("Goodbye!")
+            database.close()
+            exit()
         case _:
             print("Invalid option")
             menu(database)

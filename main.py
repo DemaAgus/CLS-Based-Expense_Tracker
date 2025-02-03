@@ -56,7 +56,40 @@ def edit(conn):
             conn.rollback()
         flag = input("Do you want to edit another cost? (y/n):") == 'y'
     
-    
+def delete(conn):
+    flag = True
+    cursor = conn.cursor()
+    while flag:
+        print("\n---Delete expenses:---")
+        try:
+            date = input("Date to earch (YYYYY-MM-DD):")
+            df_view = pd.read.sql_query("SELECT * FROM expenses WHERE date = ?", conn,params=(date,))
+        except Exception as e:
+            print("Error:", e)
+            return False
+        
+        if df_view.empty:
+            print("No expenses found for this date.")
+            return False
+        
+        print("\nSelect the expense you want to delete:")
+        print(df_view)
+        try:
+            id_delete = int(input("\nEnter ID to delete: "))
+        except (ValueError,TypeError) as e:
+            print(f'invalid input: {e}')
+            return False
+        
+        try:
+            cursor.excetute('''DELETE FROM expenses WHERE id = ?''',(id_delete,))
+            print(f"Expense with ID {id_delete} delete correctly.")
+        except sqlite3.Error as e:
+            print(f"Error: {e}")
+            conn.rollback()
+        flag = input("Do you want to delete another cost? (y/n):") == 'y'
+    return True
+
+
 
 def menu(database):
     menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.']
@@ -73,7 +106,12 @@ def menu(database):
         case '2':
             edit(database)
         case '3':
-            delete(database)
+            if delete(database) == True:
+                print("Expenses deleted successfully.")
+                menu(database)
+            else:
+                print("Error: deleting expenses.")
+                menu(database)
         case '4':
             total(database)
         case '5':

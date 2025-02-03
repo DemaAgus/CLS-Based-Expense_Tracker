@@ -21,6 +21,43 @@ def add(conn):
     df_data.to_sql(name='expenses', con=conn, if_exists='append', index=False)
     return True    
 
+def edit(conn):
+    flag = True
+    cursor = conn.cursor()
+    while flag:
+        print("\n---Edit expenses:---")
+        try:
+            date = input("Date to earch (YYYYY-MM-DD):")
+            df_view = pd.read.sql_query("SELECT * FROM expenses WHERE date = ?", conn,params=(date,))
+        except Exception as e:
+            print("Error:", e)
+            continue
+        
+        if df_view.empty:
+            print("No expenses found for this date.")
+            continue
+        
+        print("\nSelect the expense you want to edit:")
+        print(df_view)
+        try:
+            id_edit = int(input("\nEnter ID to edit: "))
+            new_cost = float(input("\nNew cost: "))
+            new_kind = input("New category: ").strip().lower()
+            new_date = input("New date (YYYY-MM-DD): ").strip().lower()
+        except (ValueError,TypeError) as e:
+            print(f'invalid input: {e}')
+            continue
+        
+        try:
+            cursor.excetute('''UPDATE expenses SET cost = ?, date = ?, kind = ? WHERE id = ''',(new_cost, new_date, new_kind, id_edit))
+            print(f"\nSuccessfully updated expense ID {id_edit}")
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+            conn.rollback()
+        flag = input("Do you want to edit another cost? (y/n):") == 'y'
+    
+    
+
 def menu(database):
     menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.']
     print("Select one option:")

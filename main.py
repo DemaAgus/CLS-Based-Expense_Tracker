@@ -149,7 +149,122 @@ def delete(conn):
         flag = input("Do you want to delete another cost? (y/n):") == 'y'
     return True
 
+def total(conn):
+    """
+    Displays expense details and summary totals for a specific month.
+    
+    Parameters:
+    conn (sqlite3.Connection): Active database connection object
+    
+    Returns:
+    bool: True if operation completed successfully, False if critical error occurred
+    
+    Features:
+    - Month validation (01-12 format)
+    - Detailed expense listing
+    - Categorized expense summary
+    - Grand total calculation
+    - Error handling with transaction safety
+    - Multiple month analysis capability
+    """
+    flag = True
+    while flag:
+        try:
+            # Get and validate month input
+            month = input("\nEnter the month to calculate totals (MM): ").strip().zfill(2)
+            
+            if not (1 <= int(month) <= 12):
+                print("Invalid month. Please enter 01-12.")
+                continue
 
+            print(f"\n--- Total expenses for month {month} ---")
+            
+            # Execute database query
+            df_view = pd.read_sql_query(
+                "SELECT date, kind, cost FROM expenses WHERE strftime('%m', date) = ?",
+                conn,
+                params=(month,)
+            )
+
+            if df_view.empty:
+                print("\nNo expenses found for this month.")
+            else:
+                # Display detailed expenses
+                print("\n--- Detailed Expenses ---")
+                print(df_view.to_string(index=False))
+                
+                # Calculate category totals
+                print("\n--- Category Totals ---")
+                category_totals = df_view.groupby('kind', as_index=False)['cost'].sum()
+                category_totals.columns = ['Category', 'Total']
+                print(category_totals.to_string(index=False))
+                
+                # Calculate grand total
+                grand_total = df_view['cost'].sum()
+                print(f"\nGRAND TOTAL FOR MONTH {month}: ${grand_total:.2f}")
+
+        except ValueError:
+            print("Invalid month format. Please use numeric format (01-12).")
+        except sqlite3.Error as e:
+            print(f"\nDatabase error: {str(e)}")
+            return False
+        except Exception as e:
+            print(f"\nUnexpected error: {str(e)}")
+            return False
+
+        # Handle continuation prompt
+        while True:
+            cont = input("\nView another month? (y/n): ").strip().lower()
+            if cont in ('y', 'n'):
+                flag = (cont == 'y')
+                break
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+    return True
+
+def export(conn):
+    """
+    Exports all expense data from the database to a timestamped CSV file.
+    
+    Parameters:
+    conn (sqlite3.Connection): Active database connection object
+    
+    Returns:
+    bool: True if operation completed successfully, False if any error occurred
+    
+    Features:
+    - Automatic CSV file naming with timestamp
+    - Full database table export
+    - Comprehensive error handling (database and file I/O)
+    - Empty dataset validation
+    - User feedback messages
+    """
+    try:
+        # Generate timestamped filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"expenses_export_{timestamp}.csv"
+        
+        # Retrieve all expense data
+        df_view = pd.read_sql_query("SELECT * FROM expenses", conn)
+        
+        if df_view.empty:
+            print("\nNo data available to export.")
+            return False
+            
+        # Export to CSV
+        df_view.to_csv(filename, index=False)
+        print(f"\nSuccessfully exported {len(df_view)} records to {filename}")
+        return True
+        
+    except sqlite3.Error as e:
+        print(f"\nDatabase operation failed: {str(e)}")
+        return False
+    except PermissionError:
+        print("\nFile write error: Permission denied. Check file access rights.")
+        return False
+    except Exception as e:
+        print(f"\nUnexpected error during export: {str(e)}")
+        return False
 
 def menu(database):
     menu = ['Add.','Edit.','Delete.','Total of the month.','Export data.']
@@ -160,29 +275,39 @@ def menu(database):
     match option:
         case '1':
             if add(database) == True:
-                print("Expenses added successfully.")
+                print("\nExpenses added successfully.")
                 menu(database)
             else:
-                print("Error: adding expenses.")
+                print("\nError: adding expenses.")
                 menu(database)
         case '2':
             if edit(database) == True:
-                print("Expenses edited successfully.")
+                print("\nExpenses edited successfully.")
                 menu(database)
             else:
-                print("Error: editing expenses.")
+                print("\nError: editing expenses.")
                 menu(database)
         case '3':
             if delete(database) == True:
-                print("Expenses deleted successfully.")
+                print("\nExpenses deleted successfully.")
                 menu(database)
             else:
-                print("Error: deleting expenses.")
+                print("\nError: deleting expenses.")
                 menu(database)
         case '4':
-            total(database)
+            if total(database) == True:
+                print("\nTotal calculated successfully.")
+                menu(database)
+            else:
+                print("\nError: calculating total.")
+                menu(database)
         case '5':
-            export(database)
+            if export(database) == True:
+                print("\nSuccessfully exported data.")
+                menu(database)
+            else:
+                print("\nError: exporting data.")
+                menu(database)
         case _:
             print("Invalid option")
             menu(database)

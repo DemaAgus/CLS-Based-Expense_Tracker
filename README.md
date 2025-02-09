@@ -7,6 +7,10 @@ An application to track your expenses and income using the CLS approach, helping
 - [Description](#description)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [Contact](#contact)
 
 ## Description
 
@@ -24,9 +28,12 @@ The **CLS Based Expense Tracker** is a tool designed to help you monitor and org
 
 ## Technologies Used
 
-- **Frontend:** HTML, CSS, and JavaScript (include any frameworks or libraries you use, such as React, Angular, or Vue).
-- **Backend:** [Server technology] (e.g., Node.js, Python, Ruby – specify the technology you are using).
-- **Database:** [Database management system] (e.g., MySQL, PostgreSQL, or MongoDB).
+- **Language:** Python
+- **Database:** SQLite3
+- **Libraries:**
+  - **Pandas:** For data manipulation and analysis.
+  - **NumPy:** For numerical computations.
+  - **datetime:** For handling date and time operations.
 
 > If you use other tools or dependencies (like testing tools, CSS preprocessors, etc.), list them in this section.
 
@@ -38,3 +45,52 @@ Follow these steps to install and run the project locally:
    ```bash
    git clone https://github.com/DemaAgus/CLS-Based-Expense_Tracker.git
    cd CLS-Based-Expense_Tracker
+   ```
+   
+2. *Create a virtual environment (optional but recommended):*
+   ```bash
+   python -m venv env
+   source env/bin/activate  # On Windows use: env\Scripts\activate
+   ```
+   
+3. *Install dependencies:*
+   ```bash
+   pip install -r requirements.txt
+   ```
+   If a *requirements.txt* file is not provided, you can manually install the required libraries:
+   ```bash
+   pip install pandas numpy
+   ```
+   
+5. *Set up the SQLite3 database:*
+   The project uses SQLite3 to store transaction data. No additional configuration is required; the application will create the database file if it does not already exist.
+   
+6. *Run the application:*
+   ```bash
+   python main.py
+   ```
+## Usage
+Once the project is running, you can:
+- *Add New Transactions:* Input expenses or income through the command-line interface or GUI (if available).
+- *View Transactions:* Retrieve and display your recorded transactions.
+- *Generate Reports:* Use built-in reporting features to analyze your spending and income trends over time.
+
+## Contributing
+Contributions are welcome! To contribute, please follow these steps:
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Make your changes and commit them:
+ ```bash
+git commit -m "Add: brief description of your changes"
+```
+4. Push your changes to your branch:
+```bash
+git push origin feature/your-feature-name
+```
+5. Open a Pull Request for your changes to be reviewed.
+
+## Contact
+For questions, suggestions, or to report issues, please contact agusdemarchi03@gmail.com or open an issue in this repository.
